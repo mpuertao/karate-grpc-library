@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'com.google.protobuf' version '0.9.4'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.tevolvers'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+def karateVersion = '1.4.1'
+def grpcVersion = '1.57.2'
+def protobufVersion = '3.25.3'
+
+dependencies {
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "javax.annotation:javax.annotation-api:1.3.2"
+    testImplementation "com.intuit.karate:karate-junit5:${karateVersion}"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                grpc {}
+            }
+        }
+    }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+configurations.all {
+    resolutionStrategy {
+        force "io.grpc:grpc-core:${grpcVersion}"
+        force "io.grpc:grpc-api:${grpcVersion}"
+        force "io.grpc:grpc-netty-shaded:${grpcVersion}"
+        force "io.grpc:grpc-protobuf:${grpcVersion}"
+        force "io.grpc:grpc-stub:${grpcVersion}"
+    }
+
+    // This helps prevent duplicate classes in the classpath
+    exclude group: 'io.grpc', module: 'grpc-netty'
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty "karate.options", "--tags ~@ignore"
+    systemProperty "karate.env", System.getProperty("karate.env", "dev")
+    outputs.upToDateWhen { false }
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir 'src/main/proto'
+        }
+        java {
+            srcDirs 'build/generated/source/proto/main/java', 'build/generated/source/proto/main/grpc'
+        }
+        test {
+            resources {
+                srcDir file('src/test/java')
+                exclude '**/*.java'
+            }
+        }
+    }
+}
