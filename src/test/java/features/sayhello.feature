@@ -11,4 +11,3 @@ Feature: gRPC HelloWorld Test
     Then print response
     And match response != null
     And match response == { reply: "hello KARATE USER"}
-    * client.shutdown()

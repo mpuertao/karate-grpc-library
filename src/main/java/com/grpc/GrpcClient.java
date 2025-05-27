@@ -10,14 +10,14 @@ import java.io.IOException;
 import java.util.Map;
 
 public class GrpcClient {
-    private final String host;
-    private final int port;
-    private final String protoDescPath;
+    private String host;
+    private int port;
+    private String protoDescPath;
     private final ProtoLoader protoLoader;
     private final DynamicInvoker dynamicInvoker;
     private FileDescriptor fileDescriptor;
 
-    public GrpcClient(String host, int port, String protoDescPath) throws DescriptorValidationException, IOException {
+    public GrpcClient(String host, Integer port, String protoDescPath) throws DescriptorValidationException, IOException {
         this.host = host;
         this.port = port;
         this.protoDescPath = protoDescPath;
@@ -25,6 +25,12 @@ public class GrpcClient {
         this.dynamicInvoker = new DynamicInvoker(host, port);
         this.fileDescriptor = protoLoader.loadProto(protoDescPath);
 
+    }
+
+    public GrpcClient(ProtoLoader protoLoader, DynamicInvoker dynamicInvoker, FileDescriptor fileDescriptor) {
+        this.protoLoader = protoLoader;
+        this.dynamicInvoker = dynamicInvoker;
+        this.fileDescriptor = fileDescriptor;
     }
 
 
@@ -54,9 +60,8 @@ public class GrpcClient {
         } catch (Exception e) {
             return jsonResponse;
         }
-    }
-
-        public void shutdown() {
-        dynamicInvoker.shutdown();
+        finally {
+            dynamicInvoker.shutdown();
+        }
     }
 }

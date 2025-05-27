@@ -16,15 +16,20 @@ repositories {
 def karateVersion = '1.4.1'
 def grpcVersion = '1.62.2'
 def protobufVersion = '3.25.3'
+def mockitoVersion = '5.2.0'
 
 dependencies {
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation 'com.google.protobuf:protobuf-java-util:3.25.3'
+    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     implementation "javax.annotation:javax.annotation-api:1.3.2"
     implementation "com.fasterxml.jackson.core:jackson-databind:2.19.0"
     testImplementation "com.intuit.karate:karate-junit5:${karateVersion}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+
 }
 
 protobuf {
@@ -82,6 +87,18 @@ sourceSets {
                 srcDir file('src/test/java')
                 exclude '**/*.java'
             }
+        }
+    }
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = 'com.tevolvers'
+            artifactId = 'karate-grpc-library'
+            version = '1.0.0'
         }
     }
 }
